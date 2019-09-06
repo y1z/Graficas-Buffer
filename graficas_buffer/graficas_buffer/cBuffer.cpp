@@ -68,6 +68,8 @@ void cBuffer::Clear()
 
 void cBuffer::PrintValues()
 {
+  // this will help me tell when to put a '\n' char in the output
+  uint32_t IterationCount = 0;
   while (mptr_ActivePointer != mptr_End)
   {
     if (m_Type == Types::Interger8)
@@ -100,13 +102,20 @@ void cBuffer::PrintValues()
       std::cout << '|' << static_cast<float>(*Temp) << "| ";
       mptr_ActivePointer += sizeof(float);
     }
-    else if(m_Type == Types::Floating64)
+    else if (m_Type == Types::Floating64)
     {
       double *Temp = ( double *) mptr_ActivePointer;
       std::cout << '|' << static_cast<double>(*Temp) << "| ";
       mptr_ActivePointer += sizeof(double);
     }
 
+    IterationCount++;
+    if (IterationCount == m_Width)
+    {
+      std::cout << std::endl;
+      IterationCount = 0;
+    }
+    
   }
   std::cout << "\n-----------------------------------------------------\n";
   ResetActivePointer();
@@ -207,12 +216,12 @@ bool cBuffer::MoveToPos(uint32_t xPos, uint32_t yPos)
 
   if (xPos > m_Width || xPos < 0)
   {
-    printf_s("x Position is out of bounds \n");
+    printf_s("=================> x Position is out of bounds <==================\n");
     return false;
   }
   if (yPos > m_Height || yPos < 0)
   {
-    printf_s("y Position is out of bounds \n");
+    printf_s("=================> y Position is out of bounds <==================\n");
     return false;
   }
   else
