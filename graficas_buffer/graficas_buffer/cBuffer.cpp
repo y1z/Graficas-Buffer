@@ -29,6 +29,7 @@ void cBuffer::Init(uint32_t width, uint32_t height, Types type)
   m_Width = width;
   m_Height = height;
   m_Type = type;
+
   if (m_Type != Types::Floating32 && m_Type != Types::Floating64)
   {
     mptr_Beginning = std::malloc(width * height * static_cast<int8_t>(type));
