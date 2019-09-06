@@ -2,10 +2,51 @@
 //
 
 #include <iostream>
+#include "cBuffer.h"
+
+template<typename DesiredType, class ...VariantTypes>
+void PrintValue(const std::variant<VariantTypes ...> &V)
+{
+  if (auto * Result = std::get_if<DesiredType>(&V))
+  {
+    std::cout << "The type is : " << typeid(*Result).name() << " = " << *Result << '\n';
+  }
+
+}
+
 
 int main()
 {
-    std::cout << "Hello World!\n";
+  {
+    cBuffer Buffer;
+    Buffer.Init(5, 5, Types::Floating64);
+    // Buffer.Set(1, 1, 300);
+    // Buffer.Set(2, 2, 20);
+    // Buffer.Set(3, 3, 40);
+    // Buffer.Set(4, 4, 99);
+    // Buffer.Set(5, 5, 88);
+
+    Buffer.Set(1, 1, 50.34);
+    Buffer.Set(2, 2, 50.53);
+    Buffer.Set(3, 3, 435.76);
+    Buffer.Set(4, 4, 345.621);
+    Buffer.Set(5, 5, 909.131);
+    auto Value = Buffer.Get(1, 1);
+
+    PrintValue<int>(Value);
+    PrintValue<float>(Value);
+    PrintValue<double>(Value);
+    PrintValue<int64_t>(Value);
+
+    Buffer.PrintValues();
+
+    Buffer.Clear();
+
+    Buffer.PrintValues();
+  }
+
+
+  std::cout << "Hello World!\n";
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
