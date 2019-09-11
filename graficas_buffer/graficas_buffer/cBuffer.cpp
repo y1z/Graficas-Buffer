@@ -189,27 +189,27 @@ void cBuffer::FormatSet(uint32_t xPos, uint32_t yPos, double ValR, double ValG, 
 
 void cBuffer::Set(Types type, int Val)
 {
-  if (this->m_Type == Types::Interger8)
+  if (type == Types::Interger8)
   {
     *mptr_ActivePointer = Val;
     mptr_ActivePointer++;
   }
-  else if (this->m_Type == Types::Interger16)
+  else if (type == Types::Interger16)
   {
     int16_t *Temp = ( int16_t *) mptr_ActivePointer;
     *Temp = Val;
     mptr_ActivePointer += sizeof(int16_t);
   }
-  else if (this->m_Type == Types::Interger32)
+  else if (type == Types::Interger32)
   {
     int32_t *Temp = ( int32_t *) mptr_ActivePointer;
     *Temp = Val;
     mptr_ActivePointer += sizeof(int32_t);
   }
-  else if (this->m_Type == Types::Interger64)
+  else if (type == Types::Interger64)
   {
     int64_t *Temp = ( int64_t *) mptr_ActivePointer;
-    *Temp = Val;
+    *Temp = ( int64_t) Val;
     mptr_ActivePointer += sizeof(int64_t);
   }
 }
