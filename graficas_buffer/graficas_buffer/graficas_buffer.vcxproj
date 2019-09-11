@@ -153,10 +153,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="cBuffer.cpp" />
+    <ClCompile Include="cChannel.cpp" />
+    <ClCompile Include="cFormat.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cBuffer.h" />
+    <ClInclude Include="cChannel.h" />
+    <ClInclude Include="cFormat.h" />
+    <ClInclude Include="EnumsHeader.h" />
     <ClInclude Include="HelperFunctionBuffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
