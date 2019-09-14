@@ -270,13 +270,12 @@ std::variant<int, float, double, int64_t> cBuffer::GetValueByType(Types type)
     float *Temp = ( float *) mptr_ActivePointer;
     Result = *Temp;
   }
-  else if (type == Types::Floating64) 
+  else if (type == Types::Floating64)
   {
     double *Temp = ( double *) mptr_ActivePointer;
     Result = *Temp;
   }
 
-  ResetActivePointer();
   return Result;
 }
 
@@ -287,22 +286,23 @@ RGBdf cBuffer::GetValues(uint32_t xPos, uint32_t yPos)
   {
     for (int i = 0; i < m_Format.GetChannelCount(); ++i)
     {
-      std::variant<int, float, double, int64_t>  Temp  = GetValueByType(m_Format.GetChannel(i).GetChannelType());
-      if (auto * Val = std::get_if<int>(&Temp)) 
+      std::variant<int, float, double, int64_t>  Temp = GetValueByType(m_Format.GetChannel(i).GetChannelType());
+      if (auto * Val = std::get_if<int>(&Temp))
       { Result.colorChannels[i] = *Val; }
-      else if (auto * Val = std::get_if<int64_t>(&Temp)) 
+      else if (auto * Val = std::get_if<int64_t>(&Temp))
       { Result.colorChannels[i] = *Val; }
-      else if (auto * Val = std::get_if<float>(&Temp)) 
+      else if (auto * Val = std::get_if<float>(&Temp))
       { Result.colorChannels[i] = *Val; }
-      else if (auto *Val = std::get_if<double>(&Temp))
+      else if (auto * Val = std::get_if<double>(&Temp))
       { Result.colorChannels[i] = *Val; }
+      MoveByChannel(i);
     }
 
   }
 
   Result.usedChannels = m_Format.GetChannelCount();
-  
 
+  ResetActivePointer();
   return Result;
 }
 
@@ -378,32 +378,32 @@ bool cBuffer::MoveToPos(uint32_t xPos, uint32_t yPos)
 
 void cBuffer::MoveByChannel(int Channel)
 {
-  if (m_Format.GetChannel(Channel).GetChannelType == Types::Interger8 ||
-      m_Format.GetChannel(Channel).GetChannelType == Types::sInterger8)
+  if (m_Format.GetChannel(Channel).GetChannelType() == Types::Interger8 ||
+      m_Format.GetChannel(Channel).GetChannelType() == Types::sInterger8)
   {
     mptr_ActivePointer++;
   }
-  else if (m_Format.GetChannel(Channel).GetChannelType == Types::Interger16 ||
-           m_Format.GetChannel(Channel).GetChannelType == Types::sInterger16)
+  else if (m_Format.GetChannel(Channel).GetChannelType() == Types::Interger16 ||
+           m_Format.GetChannel(Channel).GetChannelType() == Types::sInterger16)
   {
     mptr_ActivePointer += sizeof(uint16_t);
   }
-  else if (m_Format.GetChannel(Channel).GetChannelType == Types::Interger32 ||
-           m_Format.GetChannel(Channel).GetChannelType == Types::sInterger32)
+  else if (m_Format.GetChannel(Channel).GetChannelType() == Types::Interger32 ||
+           m_Format.GetChannel(Channel).GetChannelType() == Types::sInterger32)
   {
     mptr_ActivePointer += sizeof(uint32_t);
   }
-  else if (m_Format.GetChannel(Channel).GetChannelType == Types::Interger64 ||
-           m_Format.GetChannel(Channel).GetChannelType == Types::sInterger64)
+  else if (m_Format.GetChannel(Channel).GetChannelType() == Types::Interger64 ||
+           m_Format.GetChannel(Channel).GetChannelType() == Types::sInterger64)
   {
     mptr_ActivePointer += sizeof(uint64_t);
   }
 
-  else if (m_Format.GetChannel(Channel).GetChannelType == Types::Floating32)
+  else if (m_Format.GetChannel(Channel).GetChannelType() == Types::Floating32)
   {
     mptr_ActivePointer += sizeof(float);
   }
-  else if (m_Format.GetChannel(Channel).GetChannelType == Types::Floating64)
+  else if (m_Format.GetChannel(Channel).GetChannelType() == Types::Floating64)
   {
     mptr_ActivePointer += sizeof(double);
   }

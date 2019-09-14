@@ -202,7 +202,7 @@ inline void InteractWithBuffer(cBuffer &Buffer)
     }
     else if (Options == 3)
     {
-
+      GetValueFromBuffer(Buffer);
     }
     else if (Options == 4)
     {
