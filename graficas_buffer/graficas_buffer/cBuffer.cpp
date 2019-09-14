@@ -242,41 +242,67 @@ void cBuffer::Set(uint32_t xPos, uint32_t yPos, double Val)
   ResetActivePointer();
 }
 
-std::variant<int, float, double, int64_t>cBuffer::Get(uint32_t xPos, uint32_t yPos)
+std::variant<int, float, double, int64_t> cBuffer::GetValueByType(Types type)
 {
   std::variant<int, float, double, int64_t> Result;
 
-  if (m_Type == Types::Interger8 && MoveToPos(xPos, yPos))
+  if (type == Types::Interger8)
   {
     Result = *mptr_ActivePointer;
   }
-  else if (this->m_Type == Types::Interger16 && this->MoveToPos(xPos, yPos))
+  else if (type == Types::Interger16)
   {
     int16_t *Temp = ( int16_t *) mptr_ActivePointer;
     Result = *Temp;
   }
-  else if (this->m_Type == Types::Interger32 && this->MoveToPos(xPos, yPos))
+  else if (type == Types::Interger32)
   {
     int32_t *Temp = ( int32_t *) mptr_ActivePointer;
     Result = *Temp;
   }
-  else if (this->m_Type == Types::Interger64 && this->MoveToPos(xPos, yPos))
+  else if (type == Types::Interger64)
   {
     int64_t *Temp = ( int64_t *) mptr_ActivePointer;
     Result = *Temp;
   }
-  else if (this->m_Type == Types::Floating32 && this->MoveToPos(xPos, yPos))
+  else if (type == Types::Floating32)
   {
     float *Temp = ( float *) mptr_ActivePointer;
     Result = *Temp;
   }
-  else if (this->m_Type == Types::Floating64 && this->MoveToPos(xPos, yPos))
+  else if (type == Types::Floating64) 
   {
     double *Temp = ( double *) mptr_ActivePointer;
     Result = *Temp;
   }
 
   ResetActivePointer();
+  return Result;
+}
+
+RGBdf cBuffer::GetValues(uint32_t xPos, uint32_t yPos)
+{
+  RGBdf Result;
+  if (MoveToPos(xPos, yPos))
+  {
+    for (int i = 0; i < m_Format.GetChannelCount(); ++i)
+    {
+      std::variant<int, float, double, int64_t>  Temp  = GetValueByType(m_Format.GetChannel(i).GetChannelType());
+      if (auto * Val = std::get_if<int>(&Temp)) 
+      { Result.colorChannels[i] = *Val; }
+      else if (auto * Val = std::get_if<int64_t>(&Temp)) 
+      { Result.colorChannels[i] = *Val; }
+      else if (auto * Val = std::get_if<float>(&Temp)) 
+      { Result.colorChannels[i] = *Val; }
+      else if (auto *Val = std::get_if<double>(&Temp))
+      { Result.colorChannels[i] = *Val; }
+    }
+
+  }
+
+  Result.usedChannels = m_Format.GetChannelCount();
+  
+
   return Result;
 }
 
@@ -349,6 +375,36 @@ bool cBuffer::MoveToPos(uint32_t xPos, uint32_t yPos)
     return true;
   }
 }
-//!TODO : add function that move the pointer depending on the channel 
+
 void cBuffer::MoveByChannel(int Channel)
-{}
+{
+  if (m_Format.GetChannel(Channel).GetChannelType == Types::Interger8 ||
+      m_Format.GetChannel(Channel).GetChannelType == Types::sInterger8)
+  {
+    mptr_ActivePointer++;
+  }
+  else if (m_Format.GetChannel(Channel).GetChannelType == Types::Interger16 ||
+           m_Format.GetChannel(Channel).GetChannelType == Types::sInterger16)
+  {
+    mptr_ActivePointer += sizeof(uint16_t);
+  }
+  else if (m_Format.GetChannel(Channel).GetChannelType == Types::Interger32 ||
+           m_Format.GetChannel(Channel).GetChannelType == Types::sInterger32)
+  {
+    mptr_ActivePointer += sizeof(uint32_t);
+  }
+  else if (m_Format.GetChannel(Channel).GetChannelType == Types::Interger64 ||
+           m_Format.GetChannel(Channel).GetChannelType == Types::sInterger64)
+  {
+    mptr_ActivePointer += sizeof(uint64_t);
+  }
+
+  else if (m_Format.GetChannel(Channel).GetChannelType == Types::Floating32)
+  {
+    mptr_ActivePointer += sizeof(float);
+  }
+  else if (m_Format.GetChannel(Channel).GetChannelType == Types::Floating64)
+  {
+    mptr_ActivePointer += sizeof(double);
+  }
+}

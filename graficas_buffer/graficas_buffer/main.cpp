@@ -3,6 +3,7 @@
 #include <string>
 #include "cBuffer.h"
 #include "cFormat.h"
+#include "sRGBA_values.h"
 #include "HelperFunctionBuffer.h"
 
 void Start();

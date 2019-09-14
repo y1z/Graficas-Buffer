@@ -55,24 +55,24 @@ inline void GetBufferValue(cBuffer &Buffer)
 
   GetCoordsBuffer(xPos, yPos);
 
-  auto Variant = Buffer.Get(xPos, yPos);
+  //auto Variant = Buffer.Get(xPos, yPos);
 
-  if (int *ValuePtr = std::get_if<int>(&Variant))
-  {
-    std::cout << "Here is the Value " << *ValuePtr << '\n';
-  }
-  else if (float *ValuePtr = std::get_if<float>(&Variant))
-  {
-    std::cout << "here is the Value " << *ValuePtr << '\n';
-  }
-  else if (double *ValuePtr = std::get_if<double>(&Variant))
-  {
-    std::cout << "here is the Value " << *ValuePtr << '\n';
-  }
-  else if (int64_t * ValuePtr = std::get_if<int64_t>(&Variant))
-  {
-    std::cout << "here is the Value " << *ValuePtr << '\n';
-  }
+  //if (int *ValuePtr = std::get_if<int>(&Variant))
+  //{
+  //  std::cout << "Here is the Value " << *ValuePtr << '\n';
+  //}
+  //else if (float *ValuePtr = std::get_if<float>(&Variant))
+  //{
+  //  std::cout << "here is the Value " << *ValuePtr << '\n';
+  //}
+  //else if (double *ValuePtr = std::get_if<double>(&Variant))
+  //{
+  //  std::cout << "here is the Value " << *ValuePtr << '\n';
+  //}
+  //else if (int64_t * ValuePtr = std::get_if<int64_t>(&Variant))
+  //{
+  //  std::cout << "here is the Value " << *ValuePtr << '\n';
+  //}
 
 }
 
@@ -125,6 +125,25 @@ inline cFormat GetFormat(bool Floating)
   return Result;
 }
 
+inline void GetValueFromBuffer(cBuffer &Buffer)
+{
+
+  uint32_t xPos;
+  uint32_t yPos;
+  std::cout << "Give me a X Coordinate \n";
+  std::cin >> xPos;
+  std::cout << "Give me a Y Coordinate \n";
+  std::cin >> yPos;
+
+  auto Values = Buffer.GetValues(xPos, yPos);
+
+  for (int i = 0; i < Values.usedChannels; ++i)
+  {
+    std::cout << " | " << Values.colorChannels[i] << " | ";
+  }
+  std::cout << "\n\n";
+}
+
 inline void AskForParmeters_Set(cBuffer &Buffer)
 {
   uint32_t xPos;
@@ -162,6 +181,11 @@ inline void InteractWithBuffer(cBuffer &Buffer)
 -> )";
   };
 
+  cBuffer secondBuffer;
+  cFormat secondBufferFormat;
+  secondBufferFormat.ParseFormat("r32g32b32a32");
+  secondBuffer.Init(10, 9, secondBufferFormat);
+
   uint16_t Options{0};
   while (true)
   {
@@ -176,6 +200,10 @@ inline void InteractWithBuffer(cBuffer &Buffer)
     {
       AskForParmeters_Set(Buffer);
     }
+    else if (Options == 3)
+    {
+
+    }
     else if (Options == 4)
     {
       Buffer.PrintValues();
@@ -183,5 +211,3 @@ inline void InteractWithBuffer(cBuffer &Buffer)
   }
 
 }
-
-

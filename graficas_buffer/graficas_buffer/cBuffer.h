@@ -4,6 +4,7 @@
 #include <variant>// for std::variant
 #include "EnumsHeader.h"
 #include "cFormat.h"
+#include "sRGBA_values.h"
 
 class cBuffer
 {
@@ -19,9 +20,9 @@ public:// functions
 
   void PrintValues();
   //! this is use set value depending on the format  
-  void FormatSet(uint32_t xPos, uint32_t yPos, int ValR, int ValG, int ValB, int ValA);
+  void FormatSet(uint32_t xPos, uint32_t yPos, int ValR, int ValG=0, int ValB=0, int ValA=0);
   //! This is for setting floating-point values 
-  void FormatSet(uint32_t xPos, uint32_t yPos, double ValR, double ValG, double  ValB, double ValA);
+  void FormatSet(uint32_t xPos, uint32_t yPos, double ValR, double ValG =0.0, double  ValB = 0.0, double ValA = 0.0);
 
   //! sets a value inside the buffer
   void Set(Types type, int Val);
@@ -31,7 +32,9 @@ public:// functions
   void Set(uint32_t xPos, uint32_t yPos, double Val);
   //! return a value in the buffer
   [[nodiscard]] std::variant<int, float, double, int64_t>
-    Get(uint32_t xPos, uint32_t yPos);
+    GetValueByType(Types type);
+
+  RGBdf GetValues(uint32_t xPos, uint32_t yPos);
 
   bool CheckIsFloat() const;
 
