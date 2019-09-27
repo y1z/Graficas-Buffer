@@ -16,7 +16,7 @@ void cFormat::ParseFormat(const std::string_view &StrView)
 {
   static std::string Spcifiers = "RGBArgba";
 
-  auto CheckForSpcifier = [&](const char PossibleMatch) ->bool {
+  auto checkIsSpecifier = [&](const char PossibleMatch) ->bool {
     for (const char &chr : Spcifiers)
     {
       if (PossibleMatch == chr)
@@ -36,10 +36,9 @@ void cFormat::ParseFormat(const std::string_view &StrView)
 
   while (Indeces < StrView.size())
   {
-    if (CheckForSpcifier(StrView[Indeces]))
+    if (checkIsSpecifier(StrView[Indeces]))
     {
-      auto Test = StrView[Indeces];
-      ChannelSpecifier Spec = this->GetSpecifier(Test);
+      ChannelSpecifier Spec = this->GetSpecifier( StrView[Indeces]);
       Types Type;
       Indeces++;
       if (Indeces < StrView.size())

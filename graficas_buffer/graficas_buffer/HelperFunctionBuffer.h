@@ -3,11 +3,27 @@
 #include "cFormat.h"
 
 auto GetCoordsBuffer = [](uint32_t &xPos, uint32_t &yPos) ->void {
-  std::cout << "Please Enter the X coordinate of where you what to set Or get your value in the buffer \n->";
+  std::cout << "Please Enter the X coordinate \n->";
   std::cin >> xPos;
 
-  std::cout << "\nNow enter the Y coordinate of where you what to set Or get your value in the buffer \n->";
+  std::cout << "\nNow enter the Y coordinate \n->";
   std::cin >> yPos;
+};
+
+auto getValuesRGBdi = []() {
+  std::cout << "give me four space separated values \n->";
+  int R, G, B, A;
+  std::cin >> R >> G>> B>> A;
+  RGBdi result{R,G,B,A};
+  return result;
+};
+
+auto getValuesRGBdf = []() {
+  std::cout << "give me four space separated values \n->";
+  double R, G, B, A;
+  std::cin >> R >> G>> B>> A;
+  RGBdf result{R,G,B,A};
+  return result;
 };
 
 template<typename DesiredType, class ...VariantTypes>
@@ -17,62 +33,6 @@ void PrintValue(const std::variant<VariantTypes ...> &V)
   {
     std::cout << "The type is : " << typeid(*Result).name() << " = " << *Result << '\n';
   }
-
-}
-//
-//inline void SetBufferValue(cBuffer &Buffer, const Types &Type)
-//{
-//  uint32_t xPos = 0;
-//  uint32_t yPos = 0;
-//
-//  GetCoordsBuffer(xPos, yPos);
-//
-//  std::cout << "Now Pleas enter which value you what to set \n->";
-//  if (Type != Types::Floating32 && Type != Types::Floating64)
-//  {
-//    int Value = 0;
-//    std::cin >> Value;
-//    Buffer.Set(xPos, yPos, Value);
-//  }
-//  else if (Type == Types::Floating32)
-//  {
-//    float Value = 0.0f;
-//    std::cin >> Value;
-//    Buffer.Set(xPos, yPos, Value);
-//  }
-//  else if (Type == Types::Floating64)
-//  {
-//    double Value = 0.0;
-//    std::cin >> Value;
-//    Buffer.Set(xPos, yPos, Value);
-//  }
-//}
-
-inline void GetBufferValue(cBuffer &Buffer)
-{
-  uint32_t xPos = 0;
-  uint32_t yPos = 0;
-
-  GetCoordsBuffer(xPos, yPos);
-
-  //auto Variant = Buffer.Get(xPos, yPos);
-
-  //if (int *ValuePtr = std::get_if<int>(&Variant))
-  //{
-  //  std::cout << "Here is the Value " << *ValuePtr << '\n';
-  //}
-  //else if (float *ValuePtr = std::get_if<float>(&Variant))
-  //{
-  //  std::cout << "here is the Value " << *ValuePtr << '\n';
-  //}
-  //else if (double *ValuePtr = std::get_if<double>(&Variant))
-  //{
-  //  std::cout << "here is the Value " << *ValuePtr << '\n';
-  //}
-  //else if (int64_t * ValuePtr = std::get_if<int64_t>(&Variant))
-  //{
-  //  std::cout << "here is the Value " << *ValuePtr << '\n';
-  //}
 
 }
 
@@ -168,6 +128,30 @@ inline void AskForParmeters_Set(cBuffer &Buffer)
 
 }
 
+inline void AskForParamters_LineDraw(cBuffer &buffer)
+{
+  uint32_t xPos1, yPos1, xPos2, yPos2;
+  //beginning
+  std::cout << "give me 2 values that represent the beginning of a line (origin) \n  ";
+  GetCoordsBuffer(xPos1, yPos1);
+  std::cout << "give me 2 values that re represent the ending of a line (end) \n  ";
+  GetCoordsBuffer(xPos2, yPos2);
+
+  CVector2D origin(xPos1, yPos1);
+  CVector2D end(xPos2, yPos2);
+
+  if (buffer.CheckIsFloat() == false)
+  {
+    RGBdi value = getValuesRGBdi();
+    buffer.drawLine(origin, end, value);
+  }
+  else
+  {
+    RGBdf value = getValuesRGBdf();
+    buffer.drawLine(origin, end, value);
+  }
+  //      buffer.drawLine(origin, end);
+}
 
 inline void InteractWithBuffer(cBuffer &Buffer)
 {
@@ -175,9 +159,11 @@ inline void InteractWithBuffer(cBuffer &Buffer)
     std::cout << R"(
 0) Quit 
 1) Clear Buffer 
-2)Set Value 
-3)Get Value
-4)Print Values 
+2) Set Value 
+3) Get Value
+4) Print Values 
+5) draw line 
+6) draw Circle
 -> )";
   };
 
@@ -208,6 +194,13 @@ inline void InteractWithBuffer(cBuffer &Buffer)
     {
       Buffer.PrintValues();
     }
+    else if (Options == 5)
+    {
+      AskForParamters_LineDraw(Buffer);
+    }
+    
+    else if (Options == 6){
+      Buffer.drawCircle();
+    }
   }
-
 }

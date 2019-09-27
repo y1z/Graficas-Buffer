@@ -5,6 +5,7 @@
 #include "EnumsHeader.h"
 #include "cFormat.h"
 #include "sRGBA_values.h"
+#include "CVector2D.h"
 
 class cBuffer
 {
@@ -20,9 +21,9 @@ public:// functions
 
   void PrintValues();
   //! this is use set value depending on the format  
-  void FormatSet(uint32_t xPos, uint32_t yPos, int ValR, int ValG=0, int ValB=0, int ValA=0);
+  void FormatSet(uint32_t xPos, uint32_t yPos, int ValR, int ValG = 0, int ValB = 0, int ValA = 0);
   //! This is for setting floating-point values 
-  void FormatSet(uint32_t xPos, uint32_t yPos, double ValR, double ValG =0.0, double  ValB = 0.0, double ValA = 0.0);
+  void FormatSet(uint32_t xPos, uint32_t yPos, double ValR, double ValG = 0.0, double  ValB = 0.0, double ValA = 0.0);
 
   //! sets a value inside the buffer
   void Set(Types type, int Val);
@@ -38,6 +39,16 @@ public:// functions
 
   bool CheckIsFloat() const;
 
+  //! draw a line using vector logic 
+  void drawLine(CVector2D &originPoint,
+                CVector2D &endPoint,
+                RGBdf Value = {1.0,1.22,2.2,1.5});
+
+  void drawLine(CVector2D &originPoint,
+                CVector2D &endPoint,
+                RGBdi Value = {1,2,3,5});
+
+  void drawCircle(RGBdi Value = {90,1,1,1});
 private:
   void PrintByTypeAndMove(Types Type);
   //! for reseting the active pointer to the beginning of the buffer
@@ -45,9 +56,14 @@ private:
   //! for moving the active pointer to the desired location
   [[nodiscard]] bool
     MoveToPos(uint32_t xPos, uint32_t yPos);
+// meant for drawing a circle 
+ void CircleMoveToPos(int32_t xPos,  int32_t yPos);  
 
-  void MoveByChannel(int Channel);
+ void CircleFormatSet(float r, float g, float b, float a); 
 
+ void CircleFormatSet(int r, int g, int b, int a); 
+  void
+    MoveByChannel(int Channel);
 private:// variables
 
   //! this is to keep track of how the data is organized 

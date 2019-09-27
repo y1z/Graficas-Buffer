@@ -1,6 +1,7 @@
 #include "cBuffer.h"
 #include <iostream>
 #include <memory>
+#include <algorithm>
 
 auto GetSizeOfType = [](Types Type) -> uint32_t {
   switch (Type)
@@ -30,6 +31,12 @@ auto GetSizeOfType = [](Types Type) -> uint32_t {
     default:
       return 0;
   }
+};
+
+auto calculateAverageVector = [](const CVector2D &lowerVec, const CVector2D &upperVec) {
+  float averageX = (lowerVec.GetX() + upperVec.GetX()) / 2;
+  float averageY = (lowerVec.GetY() + upperVec.GetY()) / 2;
+  return CVector2D(averageX, averageY);
 };
 
 cBuffer::cBuffer()
@@ -121,26 +128,23 @@ void cBuffer::PrintValues()
 {
   // this will help me tell when to put a '\n' char in the output
   uint32_t IterationCount = 0;
-  // this will be used to know which channel to access
-  uint64_t ChannelCount = 0;
 
   while (mptr_ActivePointer < mptr_End)
   {
-    Types type = m_Format.GetChannel(ChannelCount % 4).GetChannelType();
-    if (ChannelCount % 4 == 0) { std::cout << "<"; }
-    PrintByTypeAndMove(type);
-    if (ChannelCount % 4 == 3) { std::cout << "> "; }
+    std::cout << "<";
+    for (int i = 0; i < m_Format.GetChannelCount(); ++i)
+    {
+      Types type = m_Format.GetChannel(i).GetChannelType();
+      PrintByTypeAndMove(type);
+    }
+    std::cout << "> ";
+    IterationCount++;
 
-    if (IterationCount == m_Width * m_Format.GetChannelCount())
+    if (IterationCount == m_Width)
     {
       std::cout << std::endl;
       IterationCount = 0;
     }
-    else
-    {
-      IterationCount++;
-    }
-    ChannelCount++;
   }
   std::cout << "\n-----------------------------------------------------\n";
   ResetActivePointer();
@@ -287,14 +291,19 @@ RGBdf cBuffer::GetValues(uint32_t xPos, uint32_t yPos)
     for (int i = 0; i < m_Format.GetChannelCount(); ++i)
     {
       std::variant<int, float, double, int64_t>  Temp = GetValueByType(m_Format.GetChannel(i).GetChannelType());
+
       if (auto * Val = std::get_if<int>(&Temp))
       { Result.colorChannels[i] = *Val; }
+
       else if (auto * Val = std::get_if<int64_t>(&Temp))
       { Result.colorChannels[i] = *Val; }
+
       else if (auto * Val = std::get_if<float>(&Temp))
       { Result.colorChannels[i] = *Val; }
+
       else if (auto * Val = std::get_if<double>(&Temp))
       { Result.colorChannels[i] = *Val; }
+
       MoveByChannel(i);
     }
 
@@ -311,42 +320,189 @@ bool cBuffer::CheckIsFloat() const
   return IsFloat;
 }
 
+void cBuffer::drawLine(CVector2D &originPoint, CVector2D &endPoint, RGBdf Value)
+{
+
+  float deltaX = endPoint.GetX() - originPoint.GetX();
+  float deltaY = endPoint.GetY() - originPoint.GetY();
+  //  determines how when to move in Y  
+  float pendentForY = deltaX / deltaY;
+
+  //the following 2 values are for always drawing the line left to right  
+  uint32_t smallestX = std::min(originPoint.GetX(), endPoint.GetX());
+  uint32_t biggestX = std::max(originPoint.GetX(), endPoint.GetX());
+
+  // going up in y 
+  if (pendentForY > 0.0f)
+  {
+    uint32_t  BufferYpos = std::min(originPoint.GetY(), endPoint.GetY());
+    float currentYPosInSegment = 0.0f;
+
+    for (size_t i = smallestX; i <= biggestX; ++i)
+    {
+      if (currentYPosInSegment > 0.998f)
+      {
+        BufferYpos += static_cast<uint32_t>(currentYPosInSegment);
+        currentYPosInSegment = 0.0f;
+      }
+      currentYPosInSegment += pendentForY;
+      this->FormatSet(i, BufferYpos,
+                      Value.colorChannels[0], Value.colorChannels[1],
+                      Value.colorChannels[2], Value.colorChannels[3]);
+    }
+  }
+  // going down in y 
+  else
+  {
+    uint32_t  BufferYpos = std::max(originPoint.GetY(), endPoint.GetY());
+    float currentYPosInSegment = 0.0f;
+
+    for (size_t i = smallestX; i <= biggestX; ++i)
+    {
+      if (currentYPosInSegment < -0.998f)
+      {
+        BufferYpos += static_cast<uint32_t>(currentYPosInSegment);
+        currentYPosInSegment = 0.0f;
+      }
+      currentYPosInSegment += pendentForY;
+      this->FormatSet(i, BufferYpos,
+                      Value.colorChannels[0], Value.colorChannels[1],
+                      Value.colorChannels[2], Value.colorChannels[3]);
+    }
+  }
+}
+
+void cBuffer::drawLine(CVector2D &originPoint, CVector2D &endPoint, RGBdi Value)
+{
+  float deltaX = endPoint.GetX() - originPoint.GetX();
+  float deltaY = endPoint.GetY() - originPoint.GetY();
+  //  determines how when to move in Y  
+  float pendentForY = deltaX / deltaY;
+
+  //the following 2 values are for always drawing the line left to right  
+  uint32_t smallestX = std::min(originPoint.GetX(), endPoint.GetX());
+  uint32_t biggestX = std::max(originPoint.GetX(), endPoint.GetX());
+
+  // going up in y 
+  if (pendentForY > 0.0f)
+  {
+    uint32_t  BufferYpos = std::min(originPoint.GetY(), endPoint.GetY());
+    float currentYPosInSegment = 0.0f;
+
+    for (size_t i = smallestX; i <= biggestX; ++i)
+    {
+      if (currentYPosInSegment > 0.998f)
+      {
+        BufferYpos += static_cast<uint32_t>(currentYPosInSegment);
+        currentYPosInSegment = 0.0f;
+      }
+      currentYPosInSegment += pendentForY;
+      this->FormatSet(i, BufferYpos,
+                      Value.colorChannels[0], Value.colorChannels[1],
+                      Value.colorChannels[2], Value.colorChannels[3]);
+    }
+  }
+  // going down in y 
+  else
+  {
+    uint32_t  BufferYpos = std::max(originPoint.GetY(), endPoint.GetY());
+    float currentYPosInSegment = 0.0f;
+
+    for (size_t i = smallestX; i <= biggestX; ++i)
+    {
+      if (currentYPosInSegment < -0.998f)
+      {
+        BufferYpos += static_cast<uint32_t>(currentYPosInSegment);
+        currentYPosInSegment = 0.0f;
+      }
+      currentYPosInSegment += pendentForY;
+      this->FormatSet(i, BufferYpos,
+                      Value.colorChannels[0], Value.colorChannels[1],
+                      Value.colorChannels[2], Value.colorChannels[3]);
+    }
+  }
+}
+
+void cBuffer::drawCircle(RGBdi Value)
+{
+
+  this->FormatSet(m_Width, m_Height / 2,
+                  Value.colorChannels[0], Value.colorChannels[1],
+                  Value.colorChannels[2], Value.colorChannels[3]);
+
+  CVector2D middlePoint(m_Width / 2, m_Height / 2);
+
+
+  // the same as 20 degrees
+  const float angleStep = 20.0f;
+
+  for (int i = 1; i < 18; ++i)
+  {
+
+    MoveToPos(m_Width / 2, m_Height / 2);
+
+    float Deg = angleStep * i;
+    float Rad = Deg *= (3.1415926 / 180);
+    float X = middlePoint.GetX() + ((m_Width / 2) * cosf(Rad));
+    float Y = middlePoint.GetY() + ((m_Height/ 2) * sinf(Rad));
+
+    CircleMoveToPos(X, Y);
+
+    if (this->CheckIsFloat() == true)
+    {
+      CircleFormatSet(
+        Value.colorChannels[0], Value.colorChannels[1],
+        Value.colorChannels[2], Value.colorChannels[3]);
+    }
+    else
+    {
+      CircleFormatSet(
+        Value.colorChannels[0], Value.colorChannels[1],
+        Value.colorChannels[2], Value.colorChannels[3]);
+    }
+
+    ResetActivePointer();
+  }
+
+  ResetActivePointer();
+}
+
 void cBuffer::PrintByTypeAndMove(Types Type)
 {
   if (Type == Types::Interger8)
   {
-    std::cout << '|' << static_cast<int>(*mptr_ActivePointer) << "| ";
+    std::cout << '|' << static_cast<int>(*mptr_ActivePointer) << "|";
     mptr_ActivePointer++;
   }
   else if (Type == Types::Interger16)
   {
     int16_t *Temp = ( int16_t *) mptr_ActivePointer;
-    std::cout << '|' << static_cast<int16_t>(*Temp) << "| ";
+    std::cout << '|' << static_cast<int16_t>(*Temp) << "|";
     mptr_ActivePointer += sizeof(int16_t);
   }
   else if (Type == Types::Interger32)
   {
     int32_t *Temp = ( int32_t *) mptr_ActivePointer;
-    std::cout << '|' << static_cast<int32_t>(*Temp) << "| ";
+    std::cout << '|' << static_cast<int32_t>(*Temp) << "|";
     mptr_ActivePointer += sizeof(int32_t);
   }
   else if (Type == Types::Interger64)
   {
     int64_t *Temp = ( int64_t *) mptr_ActivePointer;
-    std::cout << '|' << static_cast<int64_t>(*Temp) << "| ";
+    std::cout << '|' << static_cast<int64_t>(*Temp) << "|";
     mptr_ActivePointer += sizeof(int64_t);
   }
 
   else if (Type == Types::Floating32)
   {
     float *Temp = ( float *) mptr_ActivePointer;
-    std::cout << '|' << static_cast<float>(*Temp) << "| ";
+    std::cout << '|' << static_cast<float>(*Temp) << "|";
     mptr_ActivePointer += sizeof(float);
   }
   else if (Type == Types::Floating64)
   {
     double *Temp = ( double *) mptr_ActivePointer;
-    std::cout << '|' << static_cast<double>(*Temp) << "| ";
+    std::cout << '|' << static_cast<double>(*Temp) << "|";
     mptr_ActivePointer += sizeof(double);
   }
 }
@@ -373,6 +529,68 @@ bool cBuffer::MoveToPos(uint32_t xPos, uint32_t yPos)
   {
     mptr_ActivePointer += ((yPos - 1) * m_Pitch) + ((xPos - 1) * (m_DataSize));
     return true;
+  }
+}
+
+void cBuffer::CircleMoveToPos(int32_t xPos, int32_t yPos)
+{
+  int32_t DestY;
+  int32_t DestX;
+
+  // for moving backwards 
+  if (yPos < 0)
+  {
+    DestY = yPos * m_Pitch;
+  }
+  else
+  {
+    DestY = (yPos - 1) * m_Pitch;
+  }
+
+  if (xPos < 0)
+  {
+    DestX = xPos * m_DataSize;
+  }
+  else
+  {
+    DestX = (xPos - 1) * m_DataSize;
+  }
+
+
+  mptr_ActivePointer += DestX + DestY;
+}
+
+void cBuffer::CircleFormatSet(float r, float g, float b, float a)
+{
+
+  for (int i = 0; i < m_Format.GetChannelCount(); ++i)
+  {
+    // set the individual r.g.b values 
+    if (i == 0)
+    { Set(m_Format.GetChannel(i).GetChannelType(), r); }
+    else if (i == 1)
+    { Set(m_Format.GetChannel(i).GetChannelType(), g); }
+    else if (i == 2)
+    { Set(m_Format.GetChannel(i).GetChannelType(), b); }
+    else if (i == 3)
+    { Set(m_Format.GetChannel(i).GetChannelType(), a); }
+  }
+}
+
+void cBuffer::CircleFormatSet(int r, int g, int b, int a)
+{
+
+  for (int i = 0; i < m_Format.GetChannelCount(); ++i)
+  {
+    // set the individual r.g.b values 
+    if (i == 0)
+    { Set(m_Format.GetChannel(i).GetChannelType(), r); }
+    else if (i == 1)
+    { Set(m_Format.GetChannel(i).GetChannelType(), g); }
+    else if (i == 2)
+    { Set(m_Format.GetChannel(i).GetChannelType(), b); }
+    else if (i == 3)
+    { Set(m_Format.GetChannel(i).GetChannelType(), a); }
   }
 }
 
@@ -408,3 +626,4 @@ void cBuffer::MoveByChannel(int Channel)
     mptr_ActivePointer += sizeof(double);
   }
 }
+

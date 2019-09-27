@@ -1,9 +1,12 @@
 // graficas_buffer.cpp : This file contains the 'main' function. Program execution begins and ends there.
 #include <iostream>
+#include <cinttypes>
 #include <string>
+#include <cmath>
 #include "cBuffer.h"
 #include "cFormat.h"
 #include "sRGBA_values.h"
+#include "SimpleVector.h"
 #include "HelperFunctionBuffer.h"
 
 void Start();
@@ -14,12 +17,24 @@ void InteractWithBuffer(cBuffer &Buffer);
 /*! this present the options the user has */
 void PresentOptions();
 
-int main()
+int
+main()
 {
+  cBuffer buffer;
+  cFormat format; 
+  RGBdi value = {90,90,90,90};
+  format.ParseFormat("r8");
+  buffer.Init(11, 11, format); 
+  buffer.Clear();
+  buffer.drawCircle(value);
+  buffer.PrintValues();
+
+
   Start();
 }
 
-void Start()
+void
+Start()
 {
   int32_t Options{0};
   bool IsFloat = false;
@@ -29,15 +44,16 @@ void Start()
   if (Options == 1) { IsFloat = true; }
   cFormat BufferFormat = GetFormat(IsFloat);
   cBuffer Buffer;
- // Types TypeOfBuffer;
-//  SelectChannelType(TypeOfBuffer,Format.CheckIsFloating());
+  // Types TypeOfBuffer;
+ //  SelectChannelType(TypeOfBuffer,Format.CheckIsFloating());
   std::pair<uint32_t, uint32_t> HeightAndWidth = SelectBufferHeightAndWidth();
 
   Buffer.Init(HeightAndWidth.first, HeightAndWidth.second, BufferFormat);
   InteractWithBuffer(Buffer);
 }
 
-std::pair<uint32_t, uint32_t> SelectBufferHeightAndWidth()
+std::pair<uint32_t, uint32_t>
+SelectBufferHeightAndWidth()
 {
   uint32_t Height;
   uint32_t Width;
@@ -53,7 +69,8 @@ std::pair<uint32_t, uint32_t> SelectBufferHeightAndWidth()
 }
 
 
-void PresentOptions()
+void
+PresentOptions()
 {
   std::cout << R"??(0) Exit
 1) Set Value in the buffer
